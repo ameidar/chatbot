@@ -27,7 +27,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS
 
 # Timeout period (e.g., 5 minutes)
-CONVERSATION_TIMEOUT = 1 * 60
+CONVERSATION_TIMEOUT = 5 * 60
 
 # Dictionary to store phone number to thread ID mapping
 phone_to_thread = {}
