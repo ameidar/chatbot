@@ -27,7 +27,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS
 
 # Timeout period (e.g., 5 minutes)
-CONVERSATION_TIMEOUT = 5 * 60
+CONVERSATION_TIMEOUT = 1 * 60
 
 # Dictionary to store phone number to thread ID mapping
 phone_to_thread = {}
@@ -216,6 +216,7 @@ def webhook():
         print(f"Received webhook data: {data}")
         if data and "message" in data and "role" in data and "thread_id" in data:
             # Process the user's message and send it to OpenAI
+            print(f"Process the user's message and send it to OpenAI")
             user_message = data["message"]
             role = data["role"]
             phone_num = data["thread_id"]
@@ -240,7 +241,6 @@ def webhook():
                 client.beta.threads.messages.create(
                     thread_id=thread_id, role="user", content=user_message
                 )
-
                 # Create a run with additional instructions for new threads
                 if new_thread:
                     instructions = "Please greet the customer and ask for their name and email address. please do it only in hebrew"
