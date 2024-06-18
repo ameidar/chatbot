@@ -32,6 +32,7 @@ CONVERSATION_TIMEOUT = 1 * 60
 
 # Dictionary to store phone number to thread ID mapping
 phone_to_thread = {}
+phone_num = ''
 
 # Dictionary to store conversation details
 conversation_details = {}
@@ -201,13 +202,6 @@ def handle_conversation_timeout(thread_id):
                     else:
                         print(f"Unexpected message content format: {message.content}")
 
-
-
-        
-
-
-
-
     name = extract_details(thread_id, "Name")
     email = extract_details(thread_id, "email")
     child_name = extract_details(thread_id, "child's name")
@@ -223,7 +217,7 @@ def handle_conversation_timeout(thread_id):
     print(f"Child's Age: {child_age}")
 
     # Send the summary to the Make webhook
-    send_summary_to_make(summary, name, phone_to_thread[thread_id], email, child_age)
+    send_summary_to_make(summary, name, phone_num, email, child_age)
 
     
     # Clean up the details for the ended conversation
