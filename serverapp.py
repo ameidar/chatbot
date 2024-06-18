@@ -148,8 +148,6 @@ def summarize_conversation(thread_id):
                         # Adapt this based on actual content structure
                         if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
                             summary = content_block.text.value
-                                # Send the assistant's message back to Make.com
-                                #send_response_to_make(assistant_message_content, "assistant", phone_num)
                     else:
                         print(f"Unexpected message content format: {message.content}")
     return summary.strip() 
@@ -157,50 +155,6 @@ def summarize_conversation(thread_id):
 # Function to handle conversation timeout
 def handle_conversation_timeout(thread_id, phone_num): 
     
-                
-    instructions = "Please summerize the conversation, what the user is interested in and what answers he got, and what he advised to buy" 
-    
-    client.beta.threads.messages.create(
-        thread_id=thread_id, role="user", content='תכתוב את סיכום השיחה עד כה'
-    )            
-    run = client.beta.threads.runs.create(
-            thread_id=thread_id,
-            assistant_id=assis_id,
-            instructions=instructions
-        )
-
-    # Wait for the assistant's response
-    while run.status != "completed":
-        time.sleep(1)
-        run = client.beta.threads.runs.retrieve(
-            thread_id=thread_id, run_id=run.id
-        )
-
-        # Retrieve messages added by the assistant
-        messages = client.beta.threads.messages.list(
-            thread_id=thread_id
-        )  
-
-        # Process the messages
-        assistant_messages_for_run = [
-                message
-                for message in messages
-                if message.run_id == run.id and message.role == "assistant"
-            ]
-
-        for message in assistant_messages_for_run:
-                print(f"Message content: {message.content}")
-                # Ensure message content is correctly accessed
-                if isinstance(message.content, list):
-                    for content_block in message.content:
-                        # Adapt this based on actual content structure
-                        if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
-                            summary = content_block.text.value
-                                # Send the assistant's message back to Make.com
-                                #send_response_to_make(assistant_message_content, "assistant", phone_num)
-                    else:
-                        print(f"Unexpected message content format: {message.content}")
-
     name = extract_details(thread_id, "Name")
     email = extract_details(thread_id, "email")
     child_name = extract_details(thread_id, "child's name")
@@ -209,9 +163,9 @@ def handle_conversation_timeout(thread_id, phone_num):
     details = conversation_details.get(thread_id, {})
     phone_num = details.get("phone_num", "")
 
-    lead_caption = generate_lead_caption(name, email, child_name, child_age, summary)
+    #lead_caption = generate_lead_caption(name, email, child_name, child_age, summary)
 
-    print(f"Lead Caption: {lead_caption}")
+   # print(f"Lead Caption: {lead_caption}")
     print(f"Summary: {summary}")
     print(f"Name: {name}")
     print(f"Email: {email}")
