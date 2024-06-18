@@ -153,14 +153,15 @@ def summarize_conversation(thread_id):
 
 # Function to handle conversation timeout
 def handle_conversation_timeout(thread_id, phone_num): 
-    
+    print(f"handle_conversation_timeout")
+    print(f"phone: {phone_num}")
     name = extract_details(thread_id, "Name")
     email = extract_details(thread_id, "email")
     child_name = extract_details(thread_id, "child's name")
     child_age = extract_details(thread_id, "child's age")
     summary = summarize_conversation(thread_id)
     details = conversation_details.get(thread_id, {})
-    phone_num = details.get("phone_num", "")
+    #phone_num = details.get("phone_num", "")
 
     #lead_caption = generate_lead_caption(name, email, child_name, child_age, summary)
 
