@@ -214,6 +214,7 @@ def handle_conversation_timeout(thread_id, phone_num):
     print(f"Email: {email}")
     print(f"Child's Name: {child_name}")
     print(f"Child's Age: {child_age}")
+    print(f"phone: {phone_num}")
 
     # Send the summary to the Make webhook
     send_summary_to_make(summary, name, phone_num, email, child_age)
