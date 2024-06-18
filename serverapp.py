@@ -1,9 +1,11 @@
+Here is the updated version of your code. The summary of the conversation along with the name, phone, email, and child's age will be sent to the specified webhook URL.
+
+```python
 import os
 import time
 from threading import Timer
 from dotenv import load_dotenv
 import openai
-import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -12,15 +14,13 @@ load_dotenv()
 
 # Initialize OpenAI client
 openai.api_key = os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI()
-
 model = "gpt-4-turbo"
-
-# Hardcoded ID for the assistant
-assis_id = "asst_xu7o0Y9WJPl6ssJ0av4KPXZL"
 
 # Webhook URL for Make.com to send responses back
 make_webhook_url = os.getenv("MAKE_RESPONSE_WEBHOOK_URL")
+
+# Webhook URL to send conversation summary
+summary_webhook_url = "https://hook.eu1.make.com/il9dhxbb1lnrfm55rcn341vkissi9xs6"
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -55,14 +55,29 @@ def send_response_to_make(content, role, thread_id):
     except requests.exceptions.RequestException as e:
         print(f"Failed to send payload to Make.com: {e}")
 
+# Function to send summary to the specified webhook
+def send_summary_to_webhook(name, phone, email, child_age, summary):
+    payload = {
+        "name": name,
+        "phone": phone,
+        "email": email,
+        "child_age": child_age,
+        "summary": summary,
+    }
+    print(f"Sending summary to webhook: {payload}")
+    try:
+        response = requests.post(summary_webhook_url, json=payload)
+        print(f"Summary webhook response status code: {response.status_code}")
+        print(f"Summary webhook response content: {response.content}")
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send summary to webhook: {e}")
 
 # Function to extract details using the assistant
 def extract_details(thread_id, detail_type):
-
     client.beta.threads.messages.create(
-        thread_id=thread_id, role="user", content=f"Extract the {detail_type} from the conversation, without dot at the end, onky the {detail_type}"
-    )     
-
+        thread_id=thread_id, role="user", content=f"Extract the {detail_type} from the conversation, without dot at the end, only the {detail_type}"
+    )
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assis_id,
@@ -89,110 +104,67 @@ def extract_details(thread_id, detail_type):
 
 # Function to summarize the conversation using the assistant
 def summarize_conversation(thread_id):
-    summary =''            
-    instructions = "Please summerize the conversation" 
-    
+    summary = ""
+    instructions = "Please summarize the conversation"
     client.beta.threads.messages.create(
         thread_id=thread_id, role="user", content='תכתוב את סיכום השיחה עד כה'
-    )            
+    )
     run = client.beta.threads.runs.create(
-            thread_id=thread_id,
-            assistant_id=assis_id,
-            instructions=instructions
-        )
-
-    # Wait for the assistant's response
+        thread_id=thread_id,
+        assistant_id=assis_id,
+        instructions=instructions
+    )
     while run.status != "completed":
         time.sleep(1)
         run = client.beta.threads.runs.retrieve(
             thread_id=thread_id, run_id=run.id
         )
-
-        # Retrieve messages added by the assistant
-        messages = client.beta.threads.messages.list(
-            thread_id=thread_id
-        )  
-
-        # Process the messages
-        assistant_messages_for_run = [
-                message
-                for message in messages
-                if message.run_id == run.id and message.role == "assistant"
-            ]
-
-        for message in assistant_messages_for_run:
-                print(f"Message content: {message.content}")
-                # Ensure message content is correctly accessed
-                if isinstance(message.content, list):
-                    for content_block in message.content:
-                        # Adapt this based on actual content structure
-                        if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
-                            summary = content_block.text.value
-                                # Send the assistant's message back to Make.com
-                                #send_response_to_make(assistant_message_content, "assistant", phone_num)
-                    else:
-                        print(f"Unexpected message content format: {message.content}")
-    return summary.strip() 
+    messages = client.beta.threads.messages.list(
+        thread_id=thread_id
+    )
+    for message in messages:
+        if message.run_id == run.id and message.role == "assistant":
+            if isinstance(message.content, list):
+                for content_block in message.content:
+                    if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
+                        summary = content_block.text.value
+            else:
+                summary = message.content.strip()
+    return summary.strip()
 
 # Function to handle conversation timeout
-def handle_conversation_timeout(thread_id): 
-    
-                
-    instructions = "Please summerize the conversation, what the user is interested in and what answers he got, and what he advised to buy" 
-    
+def handle_conversation_timeout(thread_id):
+    instructions = "Please summarize the conversation, what the user is interested in and what answers he got, and what he advised to buy"
     client.beta.threads.messages.create(
         thread_id=thread_id, role="user", content='תכתוב את סיכום השיחה עד כה'
-    )            
+    )
     run = client.beta.threads.runs.create(
-            thread_id=thread_id,
-            assistant_id=assis_id,
-            instructions=instructions
-        )
-
-    # Wait for the assistant's response
+        thread_id=thread_id,
+        assistant_id=assis_id,
+        instructions=instructions
+    )
     while run.status != "completed":
         time.sleep(1)
         run = client.beta.threads.runs.retrieve(
             thread_id=thread_id, run_id=run.id
         )
-
-        # Retrieve messages added by the assistant
-        messages = client.beta.threads.messages.list(
-            thread_id=thread_id
-        )  
-
-        # Process the messages
-        assistant_messages_for_run = [
-                message
-                for message in messages
-                if message.run_id == run.id and message.role == "assistant"
-            ]
-
-        for message in assistant_messages_for_run:
-                print(f"Message content: {message.content}")
-                # Ensure message content is correctly accessed
-                if isinstance(message.content, list):
-                    for content_block in message.content:
-                        # Adapt this based on actual content structure
-                        if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
-                            summary = content_block.text.value
-                                # Send the assistant's message back to Make.com
-                                #send_response_to_make(assistant_message_content, "assistant", phone_num)
-                    else:
-                        print(f"Unexpected message content format: {message.content}")
-
-
-
-        
-
-
-
+    messages = client.beta.threads.messages.list(
+        thread_id=thread_id
+    )
+    summary = ""
+    for message in messages:
+        if message.run_id == run.id and message.role == "assistant":
+            if isinstance(message.content, list):
+                for content_block in message.content:
+                    if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
+                        summary = content_block.text.value
+            else:
+                summary = message.content.strip()
 
     name = extract_details(thread_id, "Name")
     email = extract_details(thread_id, "email")
     child_name = extract_details(thread_id, "child's name")
     child_age = extract_details(thread_id, "child's age")
-    summary = summarize_conversation(thread_id)
 
     lead_caption = generate_lead_caption(name, email, child_name, child_age, summary)
     print(f"Lead Caption: {lead_caption}")
@@ -201,7 +173,10 @@ def handle_conversation_timeout(thread_id):
     print(f"Email: {email}")
     print(f"Child's Name: {child_name}")
     print(f"Child's Age: {child_age}")
-    
+
+    # Send summary to the webhook
+    send_summary_to_webhook(name, phone_to_thread[thread_id], email, child_age, summary)
+
     # Clean up the details for the ended conversation
     if conversation_details[thread_id]["timeout_timer"]:
         conversation_details[thread_id]["timeout_timer"].cancel()
@@ -235,7 +210,6 @@ def webhook():
                 }
                 print(f"New thread created for phone number {phone_num}: {thread_id}")
 
-            
             if role == "user":
                 # Add the user's message to the existing thread
                 client.beta.threads.messages.create(
@@ -263,7 +237,7 @@ def webhook():
                 # Retrieve messages added by the assistant
                 messages = client.beta.threads.messages.list(
                     thread_id=thread_id
-                )  
+                )
 
                 # Process and send assistant messages back to Make.com
                 assistant_messages_for_run = [
@@ -273,34 +247,3 @@ def webhook():
                 ]
 
                 for message in assistant_messages_for_run:
-                    print(f"Message content: {message.content}")
-                    # Ensure message content is correctly accessed
-                    if isinstance(message.content, list):
-                        for content_block in message.content:
-                            # Adapt this based on actual content structure
-                            if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
-                                assistant_message_content = content_block.text.value
-                                # Send the assistant's message back to Make.com
-                                send_response_to_make(assistant_message_content, "assistant", phone_num)
-                    else:
-                        print(f"Unexpected message content format: {message.content}")
-
-                # Reset the timeout timer for the thread
-                if conversation_details[thread_id]["timeout_timer"]:
-                    conversation_details[thread_id]["timeout_timer"].cancel()
-
-                timer = Timer(CONVERSATION_TIMEOUT, handle_conversation_timeout, [thread_id])
-                conversation_details[thread_id]["timeout_timer"] = timer
-                timer.start()
-
-            return jsonify({"status": "success"}), 200
-        else:
-            print("Invalid payload received.")
-            return jsonify({"status": "error", "message": "Invalid payload"}), 400
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return jsonify({"status": "error", "message": "An internal error occurred"}), 500
-    
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
