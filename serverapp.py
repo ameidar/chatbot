@@ -206,8 +206,11 @@ def handle_conversation_timeout(thread_id, phone_num):
     child_name = extract_details(thread_id, "child's name")
     child_age = extract_details(thread_id, "child's age")
     summary = summarize_conversation(thread_id)
+    details = conversation_details.get(thread_id, {})
+    phone_num = details.get("phone_num", "")
 
     lead_caption = generate_lead_caption(name, email, child_name, child_age, summary)
+
     print(f"Lead Caption: {lead_caption}")
     print(f"Summary: {summary}")
     print(f"Name: {name}")
@@ -249,8 +252,9 @@ def webhook():
                 phone_to_thread[phone_num] = thread_id
                 new_thread = True
                 conversation_details[thread_id] = {
-                    "timeout_timer": None
-                }
+                    "timeout_timer": None,
+                    "phone_num": phone_num
+                }   
                 print(f"New thread created for phone number {phone_num}: {thread_id}")
 
             
