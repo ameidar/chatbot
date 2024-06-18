@@ -21,13 +21,14 @@ assis_id = "asst_xu7o0Y9WJPl6ssJ0av4KPXZL"
 
 # Webhook URL for Make.com to send responses back
 make_webhook_url = os.getenv("MAKE_RESPONSE_WEBHOOK_URL")
+summary_webhook_url = os.getenv("SUMMARY_WEBHOOK_URL")
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS
 
 # Timeout period (e.g., 5 minutes)
-CONVERSATION_TIMEOUT = 10 * 60
+CONVERSATION_TIMEOUT = 1 * 60
 
 # Dictionary to store phone number to thread ID mapping
 phone_to_thread = {}
@@ -54,6 +55,25 @@ def send_response_to_make(content, role, thread_id):
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"Failed to send payload to Make.com: {e}")
+
+
+# Function to send the summary to the Make webhook
+def send_summary_to_make(summary, name, phone, email, child_age):
+    payload = {
+        "summary": summary,
+        "name": name,
+        "phone": phone,
+        "email": email,
+        "child_age": child_age,
+    }
+    print(f"Sending summary to Make.com: {payload}")
+    try:
+        response = requests.post(summary_webhook_url, json=payload)
+        print(f"Summary Response status code: {response.status_code}")
+        print(f"Summary Response content: {response.content}")
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send summary to Make.com: {e}")
 
 
 # Function to extract details using the assistant
@@ -201,6 +221,10 @@ def handle_conversation_timeout(thread_id):
     print(f"Email: {email}")
     print(f"Child's Name: {child_name}")
     print(f"Child's Age: {child_age}")
+
+    # Send the summary to the Make webhook
+    send_summary_to_make(summary, name, phone_to_thread[thread_id], email, child_age)
+
     
     # Clean up the details for the ended conversation
     if conversation_details[thread_id]["timeout_timer"]:
