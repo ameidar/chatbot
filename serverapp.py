@@ -141,7 +141,7 @@ def summarize_conversation(thread_id):
     ]
 
     for message in assistant_messages_for_run:
-        print(f"Message content: {message.content}")
+       # print(f"Message content: {message.content}")
         if isinstance(message.content, list):
             for content_block in message.content:
                 if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
