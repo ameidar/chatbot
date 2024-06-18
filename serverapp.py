@@ -1,6 +1,3 @@
-Here is the updated version of your code. The summary of the conversation along with the name, phone, email, and child's age will be sent to the specified webhook URL.
-
-```python
 import os
 import time
 from threading import Timer
