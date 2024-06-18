@@ -244,3 +244,33 @@ def webhook():
                 ]
 
                 for message in assistant_messages_for_run:
+                    print(f"Message content: {message.content}")
+                    # Ensure message content is correctly accessed
+                    if isinstance(message.content, list):
+                        for content_block in message.content:
+                            # Adapt this based on actual content structure
+                            if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
+                                assistant_message_content = content_block.text.value
+                                # Send the assistant's message back to Make.com
+                                send_response_to_make(assistant_message_content, "assistant", phone_num)
+                    else:
+                        print(f"Unexpected message content format: {message.content}")
+
+                # Reset the timeout timer for the thread
+                if conversation_details[thread_id]["timeout_timer"]:
+                    conversation_details[thread_id]["timeout_timer"].cancel()
+
+                timer = Timer(CONVERSATION_TIMEOUT, handle_conversation_timeout, [thread_id])
+                conversation_details[thread_id]["timeout_timer"] = timer
+                timer.start()
+
+            return jsonify({"status": "success"}), 200
+        else:
+            print("Invalid payload received.")
+            return jsonify({"status": "error", "message": "Invalid payload"}), 400
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({"status": "error", "message": "An internal error occurred"}), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001, debug=True)
