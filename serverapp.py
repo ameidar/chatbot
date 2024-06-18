@@ -32,7 +32,6 @@ CONVERSATION_TIMEOUT = 1 * 60
 
 # Dictionary to store phone number to thread ID mapping
 phone_to_thread = {}
-phone_num = ''
 
 # Dictionary to store conversation details
 conversation_details = {}
@@ -156,7 +155,7 @@ def summarize_conversation(thread_id):
     return summary.strip() 
 
 # Function to handle conversation timeout
-def handle_conversation_timeout(thread_id): 
+def handle_conversation_timeout(thread_id, phone_num): 
     
                 
     instructions = "Please summerize the conversation, what the user is interested in and what answers he got, and what he advised to buy" 
@@ -307,7 +306,7 @@ def webhook():
                 if conversation_details[thread_id]["timeout_timer"]:
                     conversation_details[thread_id]["timeout_timer"].cancel()
 
-                timer = Timer(CONVERSATION_TIMEOUT, handle_conversation_timeout, [thread_id])
+                timer = Timer(CONVERSATION_TIMEOUT, handle_conversation_timeout, [thread_id, phone_num])
                 conversation_details[thread_id]["timeout_timer"] = timer
                 timer.start()
 
