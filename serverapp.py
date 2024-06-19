@@ -58,12 +58,13 @@ def send_response_to_make(content, role, thread_id):
 
 
 # Function to send the summary to the Make webhook
-def send_summary_to_make(summary, name, phone, email, child_age):
+def send_summary_to_make(summary, name, phone, email, child_name, child_age):
     payload = {
         "summary": summary,
         "name": name,
         "phone": phone,
         "email": email,
+        "child_name": child_name,
         "child_age": child_age,
     }
     print(f"Sending summary to Make.com: {payload}")
@@ -174,7 +175,7 @@ def handle_conversation_timeout(thread_id, phone_num):
     print(f"phone: {phone_num}")
 
     # Send the summary to the Make webhook
-    send_summary_to_make(summary, name, phone_num, email, child_age)
+    send_summary_to_make(summary, name, phone_num, email, child_name, child_age)
 
     
     # Clean up the details for the ended conversation
