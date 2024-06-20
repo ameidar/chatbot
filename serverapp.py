@@ -81,7 +81,7 @@ def send_summary_to_make(summary, name, phone, email, child_name, child_age):
 def extract_details(thread_id, detail_type):
 
     client.beta.threads.messages.create(
-        thread_id=thread_id, role="user", content=f"Extract the {detail_type} from the conversation, without dot at the end, onky the {detail_type}"
+        thread_id=thread_id, role="user", content=f"Extract the {detail_type} from the conversation, without dot at the end, only the {detail_type}. If you cannot find it, just reply no"
     )     
 
     run = client.beta.threads.runs.create(
