@@ -14,7 +14,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI()
 
-model = "gpt-4-turbo"
+model = "gpt-4o"
 
 # Hardcoded ID for the assistant
 assis_id = "asst_xu7o0Y9WJPl6ssJ0av4KPXZL"
@@ -28,7 +28,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS
 
 # Timeout period (e.g., 5 minutes)
-CONVERSATION_TIMEOUT = 10 * 60
+CONVERSATION_TIMEOUT = 1 * 60
 
 # Dictionary to store phone number to thread ID mapping
 phone_to_thread = {}
@@ -81,7 +81,7 @@ def send_summary_to_make(summary, name, phone, email, child_name, child_age):
 def extract_details(thread_id, detail_type):
 
     client.beta.threads.messages.create(
-        thread_id=thread_id, role="user", content=f"Extract the {detail_type} from the conversation, without dot at the end, only the {detail_type}. If you cannot find it, just reply no"
+        thread_id=thread_id, role="user", content=f"Extract the {detail_type} from the conversation, without dot at the end, only the {detail_type}"
     )     
 
     run = client.beta.threads.runs.create(
