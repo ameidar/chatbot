@@ -41,11 +41,13 @@ def generate_lead_caption(name, email, child_name, child_age, summary):
     return lead_caption
 
 # Function to send messages back to Make.com
-def send_response_to_make(content, role, thread_id):
+def send_response_to_make(content, thread_id, phone, lastrun_id, message_id):
     payload = {
-        "role": role,
         "content": content,
         "thread_id": thread_id,
+        "phone": phone,
+        "lastrun_id": lastrun_id,
+        "message_id": message_id,
     }
     print(f"Sending payload to Make.com: {payload}")
     try:
@@ -212,7 +214,6 @@ def webhook():
                 }   
                 print(f"New thread created for phone number {phone_num}: {thread_id}")
 
-            
             if role == "user":
                 # Add the user's message to the existing thread
                 client.beta.threads.messages.create(
@@ -258,7 +259,10 @@ def webhook():
                             if hasattr(content_block, 'text') and hasattr(content_block.text, 'value'):
                                 assistant_message_content = content_block.text.value
                                 # Send the assistant's message back to Make.com
-                                send_response_to_make(assistant_message_content, "assistant", phone_num)
+                                send_response_to_make(
+                                    assistant_message_content, thread_id, phone_num, 
+                                    run.id, message.id
+                                )
                     else:
                         print(f"Unexpected message content format: {message.content}")
 
